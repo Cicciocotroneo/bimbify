@@ -318,4 +318,57 @@
                 let textData = "";
                 if(currentMode === 'url') {
                     const url = document.getElementById('urlInput').value;
-                    if(!url) throw
+                    if(!url) throw new Error("URL mancante");
+                    out.innerHTML = '<div style="text-align:center; padding:30px;">🌐 Importazione...</div>';
+                    textData = await fetchWebPage(url);
+                } else {
+                    textData = document.getElementById('recipeInput').value;
+                    if(!textData) throw new Error("Testo mancante");
+                }
+
+                out.innerHTML = '<div style="text-align:center; padding:30px;">🤖 <b>Conversione in corso...</b></div>';
+
+                const PROMPT = `
+                Agisci come RoboCook, assistente esperto di robot da cucina (tipo TM6).
+                Compito:
+                1. Estrai Titolo e Porzioni.
+                2. Converti la ricetta passo passo.
+                3. INSERISCI LE QUANTITÀ nel testo di ogni passo.
+                4. Genera settings: Trito (Vel 5-8), Soffritto (120°C), Cottura (100°C Antiorario), Vapore (Varoma).
+                OUTPUT JSON: { "title": "...", "servings": "...", "steps": [ {"action":"...", "desc":"...", "tm6":"..."} ] }
+                `;
+
+                const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ contents: [{ parts: [{ text: PROMPT + "\n\nINPUT:\n" + textData }] }] })
+                });
+
+                const d = await r.json();
+                if(d.error) throw new Error(d.error.message);
+                let raw = d.candidates[0].content.parts[0].text.replace(/```json/g,'').replace(/```/g,'').trim();
+                const json = JSON.parse(raw);
+
+                document.getElementById('resTitle').innerText = json.title || "Ricetta";
+                document.getElementById('resServings').innerText = json.servings || "";
+
+                out.innerHTML = "";
+                json.steps.forEach((s,i) => {
+                    out.innerHTML += `
+                    <div class="step">
+                        <div class="step-web-container">
+                            <span class="step-action-title">FASE ${i+1}: ${s.action}</span>
+                            <div class="step-desc">${s.desc}</div>
+                            <div class="tm6-tag">⚙️ ${s.tm6}</div>
+                        </div>
+                    </div>`;
+                });
+                pBtn.style.display='block';
+
+            } catch(e) {
+                out.innerHTML = `<div class="status-box status-error">Errore: ${e.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
