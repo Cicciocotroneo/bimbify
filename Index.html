@@ -2,21 +2,37 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoboCook - ChefGPT</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
+    <title>RoboCook</title>
+    <meta name="apple-mobile-web-app-title" content="RoboCook">
+    <meta name="application-name" content="RoboCook">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <meta name="theme-color" content="#2c3e50">
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%232c3e50%22 rx=%2220%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2270%22>🤖</text></svg>">
+
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
 
     <style>
         :root { 
-            --brand-color: #2c3e50; /* Blu scuro elegante */
-            --accent-color: #e67e22; /* Arancione Chef (cambiato per il rebrand) */
+            --brand-color: #2c3e50; 
+            --accent-color: #e67e22;
             --bg-color: #fcfcfc; 
             --error-red: #c0392b;
             --success-green: #27ae60;
             --tab-active: #34495e;
             --tab-inactive: #ecf0f1;
         }
+        
+        /* Evita il "bumping" elastico su iOS */
+        html { height: 100%; overscroll-behavior: none; }
         
         body { 
             font-family: 'Lato', sans-serif; 
@@ -26,6 +42,8 @@
             max-width: 850px; 
             margin: 0 auto; 
             line-height: 1.6;
+            /* Padding extra in basso per iPhone senza tasto home */
+            padding-bottom: env(safe-area-inset-bottom); 
         }
         
         /* --- INTERFACCIA --- */
@@ -38,18 +56,18 @@
 
         /* INPUT */
         label { font-weight: bold; display: block; margin-bottom: 8px; color: #2c3e50; }
-        input[type="text"], input[type="password"], textarea { width: 100%; padding: 12px; border: 1px solid #bdc3c7; border-radius: 8px; font-family: inherit; }
+        input[type="text"], input[type="password"], textarea { width: 100%; padding: 12px; border: 1px solid #bdc3c7; border-radius: 8px; font-family: inherit; -webkit-appearance: none; /* Rimuove stile iOS default */ }
         
         /* TABS */
         .tab-group { display: flex; gap: 10px; margin-bottom: 10px; }
-        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: #7f8c8d; background: var(--tab-inactive); transition: 0.2s; }
+        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: #7f8c8d; background: var(--tab-inactive); transition: 0.2s; -webkit-tap-highlight-color: transparent; }
         .tab-btn.active { background: var(--tab-active); color: white; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .input-panel { display: none; }
         .input-panel.active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         /* BOTTONI */
-        button.main-btn { width: 100%; padding: 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 15px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        button.main-btn { width: 100%; padding: 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 15px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; -webkit-tap-highlight-color: transparent; }
         
         .btn-primary { background: var(--accent-color); color: white; box-shadow: 0 4px 15px rgba(230, 126, 34, 0.3); }
         .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
@@ -194,12 +212,11 @@
                 <li>Crea una chiave gratuita ("Create API Key").</li>
                 <li>Incollala qui.</li>
             </ol>
-            <p style="font-size:0.9em; color:#7f8c8d;">La chiave serve solo per comunicare con l'intelligenza artificiale.</p>
         </div>
     </div>
 
     <script>
-        // --- LOGICA JS INVARIATA (Funzionalità completa) ---
+        // --- LOGICA DI SCRAPING E AI ---
         let currentMode = 'text';
         function switchTab(mode) {
             currentMode = mode;
@@ -216,7 +233,7 @@
         function toggleModal(show) { document.getElementById('helpModal').style.display = show ? 'block' : 'none'; }
         function closeModalOnClick(e) { if(e.target==document.getElementById('helpModal')) toggleModal(false); }
 
-        const STORAGE_KEY = 'robocook_key'; // Cambiato key storage per pulizia
+        const STORAGE_KEY = 'robocook_key';
         window.onload = function() {
             const k = localStorage.getItem(STORAGE_KEY);
             if(k) {
@@ -301,57 +318,4 @@
                 let textData = "";
                 if(currentMode === 'url') {
                     const url = document.getElementById('urlInput').value;
-                    if(!url) throw new Error("URL mancante");
-                    out.innerHTML = '<div style="text-align:center; padding:30px;">🌐 Importazione...</div>';
-                    textData = await fetchWebPage(url);
-                } else {
-                    textData = document.getElementById('recipeInput').value;
-                    if(!textData) throw new Error("Testo mancante");
-                }
-
-                out.innerHTML = '<div style="text-align:center; padding:30px;">🤖 <b>Conversione in corso...</b></div>';
-
-                const PROMPT = `
-                Agisci come RoboCook, assistente esperto di robot da cucina (tipo TM6).
-                Compito:
-                1. Estrai Titolo e Porzioni.
-                2. Converti la ricetta passo passo.
-                3. INSERISCI LE QUANTITÀ nel testo di ogni passo.
-                4. Genera settings: Trito (Vel 5-8), Soffritto (120°C), Cottura (100°C Antiorario), Vapore (Varoma).
-                OUTPUT JSON: { "title": "...", "servings": "...", "steps": [ {"action":"...", "desc":"...", "tm6":"..."} ] }
-                `;
-
-                const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
-                    method: 'POST',
-                    headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify({ contents: [{ parts: [{ text: PROMPT + "\n\nINPUT:\n" + textData }] }] })
-                });
-
-                const d = await r.json();
-                if(d.error) throw new Error(d.error.message);
-                let raw = d.candidates[0].content.parts[0].text.replace(/```json/g,'').replace(/```/g,'').trim();
-                const json = JSON.parse(raw);
-
-                document.getElementById('resTitle').innerText = json.title || "Ricetta";
-                document.getElementById('resServings').innerText = json.servings || "";
-
-                out.innerHTML = "";
-                json.steps.forEach((s,i) => {
-                    out.innerHTML += `
-                    <div class="step">
-                        <div class="step-web-container">
-                            <span class="step-action-title">FASE ${i+1}: ${s.action}</span>
-                            <div class="step-desc">${s.desc}</div>
-                            <div class="tm6-tag">⚙️ ${s.tm6}</div>
-                        </div>
-                    </div>`;
-                });
-                pBtn.style.display='block';
-
-            } catch(e) {
-                out.innerHTML = `<div class="status-box status-error">Errore: ${e.message}</div>`;
-            }
-        }
-    </script>
-</body>
-</html>
+                    if(!url) throw
