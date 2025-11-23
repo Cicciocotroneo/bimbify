@@ -103,105 +103,138 @@
         /* CONTENITORE NASCOSTO PER STAMPA MULTIPLA */
         #multiPrintArea { display: none; }
 
-        /* --- CSS SPECIFICO PER LA STAMPA (PDF) --- */
-        @media print {
-            body { background: white; padding: 0; margin: 0; color: #000; }
-            .container { box-shadow: none; padding: 0; border: none; width: 100%; max-width: 100%; }
-            .no-print, .section, .tab-group, .input-panel, h1, button, .status-box, .modal, .action-group, #savedRecipesContainer { display: none !important; }
-            
-            /* GESTIONE VISIBILITÀ: Se stiamo stampando Multiplo, nascondi la Card singola */
-            body.printing-multi #recipeCard { display: none !important; }
-            body.printing-multi #multiPrintArea { display: block !important; }
+/* --- CSS SPECIFICO PER LA STAMPA (PDF) --- */
+@media print {
+    /* Reset fondamentali per evitare pagine bianche */
+    body, html { 
+        background: white !important; 
+        padding: 0 !important; 
+        margin: 0 !important; 
+        color: #000 !important; 
+        width: 100% !important;
+        max-width: 100% !important; /* Rimuove il limite di 850px che può tagliare il contenuto */
+        height: auto !important;
+        overflow: visible !important;
+    }
 
-            /* Layout Base Ricetta (comune a singola e multipla) */
-            .recipe-print-wrapper {
-                display: block; 
-                border: none; 
-                padding: 0; 
-                margin: 0;
-                page-break-after: always; /* Importante per la stampa multipla */
-            }
-            .recipe-print-wrapper:last-child { page-break-after: auto; }
+    /* Assicura che il contenitore occupi tutta la pagina */
+    .container { 
+        box-shadow: none !important; 
+        padding: 0 !important; 
+        border: none !important; 
+        width: 100% !important; 
+        max-width: 100% !important; 
+        margin: 0 !important;
+    }
 
-            #recipeCard::before { display: none; } 
+    /* Nascondi elementi interfaccia */
+    .no-print, .section, .tab-group, .input-panel, h1, button, .status-box, .modal, .action-group, #savedRecipesContainer { 
+        display: none !important; 
+    }
+    
+    /* Forza la visibilità della card ricetta */
+    #recipeCard { 
+        display: block !important; 
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+    
+    /* GESTIONE VISIBILITÀ: Se stiamo stampando Multiplo */
+    body.printing-multi #recipeCard { display: none !important; }
+    body.printing-multi #multiPrintArea { display: block !important; }
 
-            .recipe-header {
-                text-align: center;
-                border-bottom: 3px double #3f5e55;
-                margin-bottom: 30px;
-                padding-bottom: 20px;
-                padding-top: 20px;
-            }
-            .recipe-title {
-                font-size: 26pt;
-                color: #000;
-                margin-bottom: 10px;
-            }
-            .recipe-meta {
-                background: transparent;
-                border: 1px solid #ccc;
-                color: #333;
-                font-size: 10pt;
-            }
+    /* Rimuovi decorazioni grafiche */
+    #recipeCard::before { display: none; } 
 
-            #stepsContainer, .steps-print-container { counter-reset: step-counter; }
+    /* Layout Intestazione */
+    .recipe-header {
+        text-align: center;
+        border-bottom: 2px solid #000; /* Solido per massima leggibilità */
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+    }
+    .recipe-title {
+        font-size: 24pt;
+        color: #000 !important;
+        margin-bottom: 5px;
+    }
+    .recipe-meta {
+        border: 1px solid #000;
+        color: #000;
+        font-size: 11pt;
+        padding: 4px 10px;
+        border-radius: 10px;
+    }
 
-            .step {
-                page-break-inside: avoid;
-                margin-bottom: 20px;
-                padding-bottom: 20px;
-                border-bottom: 1px solid #eee;
-                display: flex;
-                align-items: flex-start;
-            }
-            
-            .step-web-container { border-left: none; padding-left: 0; width: 100%; }
+    /* Reset contatori */
+    #stepsContainer, .steps-print-container { counter-reset: step-counter; }
 
-            .step::before {
-                counter-increment: step-counter;
-                content: counter(step-counter);
-                background-color: #3f5e55;
-                color: white;
-                font-weight: bold;
-                font-size: 14pt;
-                width: 35px;
-                height: 35px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin-right: 20px;
-                flex-shrink: 0;
-                -webkit-print-color-adjust: exact; 
-                print-color-adjust: exact;
-            }
+    /* Layout Passo - CORRETTO PER EVITARE PAGINA BIANCA */
+    .step {
+        page-break-inside: avoid; /* Evita di spezzare un passo a metà tra due pagine */
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #ccc;
+        display: flex;
+        align-items: flex-start;
+        width: 100%;
+    }
+    
+    /* IL PUNTO CRITICO: Usa flex: 1 invece di width: 100% */
+    .step-web-container { 
+        border-left: none; 
+        padding-left: 0; 
+        flex: 1; /* Occupa solo lo spazio rimanente, non il 100% forzato */
+    }
 
-            .step-action-title { color: #3f5e55; font-size: 11pt; margin-bottom: 5px; }
-            .step-desc { font-size: 12pt; color: #000; text-align: justify; margin-bottom: 10px; }
+    /* Stile Numero Passo */
+    .step::before {
+        counter-increment: step-counter;
+        content: counter(step-counter);
+        background-color: #3f5e55 !important; /* !important per forzare stampa colore */
+        color: white !important;
+        font-weight: bold;
+        font-size: 12pt;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        flex-shrink: 0; /* Impedisce al pallino di schiacciarsi */
+        -webkit-print-color-adjust: exact; 
+        print-color-adjust: exact;
+    }
 
-            .robo-tag {
-                display: block;
-                width: fit-content;
-                background-color: white !important;
-                border: 2px solid #3f5e55;
-                color: #000;
-                font-size: 10pt;
-                padding: 4px 12px;
-                margin-top: 8px;
-                border-radius: 4px;
-            }
+    .step-action-title { color: #000 !important; font-weight:bold; font-size: 11pt; margin-bottom: 2px; text-transform: uppercase; }
+    .step-desc { font-size: 12pt; color: #000 !important; text-align: left; margin-bottom: 5px; line-height: 1.4; }
 
-            #printFooter, .print-footer-multi { 
-                display: block !important; 
-                margin-top: 50px; 
-                font-size: 8pt; 
-                color: #999; 
-                text-align: center; 
-                border-top: 1px solid #eee; 
-                padding-top: 10px;
-                font-family: sans-serif;
-            }
-        }
+    .robo-tag {
+        display: inline-block;
+        border: 1px solid #000;
+        color: #000;
+        font-size: 9pt;
+        padding: 2px 8px;
+        margin-top: 5px;
+        border-radius: 4px;
+        font-weight: bold;
+    }
+
+    /* Footer di stampa */
+    #printFooter, .print-footer-multi { 
+        display: block !important; 
+        margin-top: 30px; 
+        font-size: 8pt; 
+        color: #666; 
+        text-align: center; 
+        border-top: 1px solid #ddd; 
+        padding-top: 10px;
+    }
+}
+
         #printFooter { display: none; }
     </style>
 </head>
