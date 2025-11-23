@@ -204,8 +204,8 @@
         }
         #printFooter { display: none; }
     </style>
-<script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="antonioder3" data-description="Support me on Buy me a coffee!" data-message="" data-color="#40DCA5" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
-    
+
+    <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="antonioder3" data-description="Support me on Buy me a coffee!" data-message="" data-color="#40DCA5" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
 </head>
 <body>
 
@@ -279,7 +279,7 @@
     </div>
 
     <script>
-        // --- LOGICA IDENTICA ALLA PRECEDENTE (NESSUNA MODIFICA FUNZIONALE) ---
+        // --- LOGICA STANDARD ---
         
         let currentMode = 'text';
         function switchTab(mode) {
@@ -412,7 +412,8 @@
                    - Trito: 5-10s / Vel 5-8.
                    - Soffritto: 3min / 120°C / Vel 1.
                    - Cottura Sugo/Risotto: 100°C / Antiorario / Vel Soft.
-                   - Vapore: Temp. Vapore / Varoma (se supportato).
+                   - Cibi Delicati (non tritare): Indica ESPLICITAMENTE di usare il "Coprilame".
+                   - Cottura a Vapore: Se possibile, usa il "Varoma" o setta Temp. Vapore.
                 
                 OUTPUT JSON:
                 { "title": "...", "servings": "...", "steps": [ {"action":"...", "desc":"...", "settings":"..."} ] }
