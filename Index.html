@@ -100,92 +100,102 @@
         .btn-multi-print { background: #2c423b; color: white; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
         .btn-multi-print:disabled { background: #ccc; cursor: not-allowed; }
 
+        /* CONTENITORE STAMPA MULTIPLA - Nascosto nel web normale */
         #multiPrintArea { display: none; }
 
         /* ========================================= */
-        /* === CORREZIONE TOTALE STAMPA (DEBUG) === */
+        /* ===          CSS STAMPA FINALE        === */
         /* ========================================= */
         @media print {
-            /* 1. Reset Strutturale - Evita overflow nascosti */
+            /* RESET BASE */
             html, body {
-                background-color: #fff !important;
+                background: white !important;
+                color: black !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
                 height: auto !important;
                 overflow: visible !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                width: 100% !important;
             }
 
-            /* 2. Nascondi TUTTO di default */
-            body > * { display: none !important; }
+            /* NASCONDI TUTTA L'INTERFACCIA WEB DI DEFAULT */
+            .container, .modal, .no-print {
+                display: none !important;
+            }
 
-            /* 3. Mostra SOLO il contenitore principale, ma resetta i suoi stili grafici */
-            .container {
+            /* --- CONFIGURAZIONE STAMPA MULTIPLA --- */
+            /* Se siamo in modalità Multipla (classe 'printing-multi' sul body) */
+            body.printing-multi #multiPrintArea {
                 display: block !important;
                 width: 100% !important;
-                max-width: none !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                box-shadow: none !important;
+                position: relative !important;
+                top: 0 !important;
+                left: 0 !important;
+            }
+
+            /* Stile per ogni ricetta nel blocco multiplo */
+            .recipe-print-wrapper {
+                page-break-after: always; /* Forza nuova pagina dopo ogni ricetta */
+                break-after: page;        /* Sintassi moderna */
+                padding-top: 20px;
+                display: block !important;
+                width: 100%;
+            }
+            
+            /* Evita pagina bianca finale se è l'ultima ricetta */
+            .recipe-print-wrapper:last-child {
+                page-break-after: auto;
+                break-after: auto;
+            }
+
+            /* --- CONFIGURAZIONE STAMPA SINGOLA --- */
+            /* Se NON siamo in multi, ma stiamo stampando la card corrente */
+            body:not(.printing-multi) #recipeCard {
+                display: block !important;
                 border: none !important;
-                overflow: visible !important;
-            }
-
-            /* 4. Nascondi tutti i figli del container... */
-            .container > * { display: none !important; }
-
-            /* 5. ...tranne la Card Ricetta (Stampa Singola) O l'Area Multipla */
-            #recipeCard, #multiPrintArea {
-                display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
                 width: 100% !important;
-                page-break-inside: auto;
             }
-            
-            /* GESTIONE LOGICA SINGOLA vs MULTIPLA */
-            /* Se c'è la classe printing-multi, nascondi la card singola e mostra l'area multipla */
-            body.printing-multi .container > #recipeCard { display: none !important; }
-            body.printing-multi > #multiPrintArea { display: block !important; } /* Spostato logica per sicurezza */
-            
-            /* Stili Interni della Ricetta per la Stampa */
-            #recipeCard::before { display: none; } /* Via la barra colorata */
+            body:not(.printing-multi) #recipeCard::before { display: none; }
 
+            /* --- STILI COMUNI DI STAMPA (Layout Ricetta) --- */
             .recipe-header {
                 text-align: center;
                 border-bottom: 2px solid #000;
-                margin-bottom: 20px;
+                margin-bottom: 30px;
                 padding-bottom: 10px;
-                page-break-inside: avoid;
             }
             .recipe-title {
+                font-size: 24pt;
                 color: #000 !important;
-                font-size: 22pt;
                 margin-bottom: 5px;
             }
             .recipe-meta {
-                color: #000;
                 border: 1px solid #000;
-                background: none !important;
+                color: #000;
+                padding: 2px 10px;
+                border-radius: 10px;
+                font-size: 11pt;
             }
 
-            /* FIX CRITICO: Resetta il contatore e i margini dei passi */
+            /* Reset container passi */
             #stepsContainer, .steps-print-container { 
                 counter-reset: step-counter; 
-                display: block;
+                display: block !important; 
                 width: 100%;
             }
 
             .step {
-                display: flex !important; /* Forza flexbox */
+                display: flex !important;
                 align-items: flex-start;
                 margin-bottom: 15px;
                 padding-bottom: 15px;
                 border-bottom: 1px solid #ccc;
-                page-break-inside: avoid; /* Cerca di non spezzare un passo a metà pagina */
+                page-break-inside: avoid; /* Non spezzare un passo a metà */
                 width: 100%;
-                background: transparent !important;
             }
 
-            /* FIX PAGINA BIANCA: Il numero del passo */
             .step::before {
                 counter-increment: step-counter;
                 content: counter(step-counter);
@@ -193,46 +203,34 @@
                 color: white !important;
                 font-weight: bold;
                 font-size: 12pt;
-                width: 28px; /* Ridotto leggermente */
+                width: 28px;
                 height: 28px;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 margin-right: 15px;
-                flex-shrink: 0; /* IMPEDISCE DI SPARIRE */
+                flex-shrink: 0;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
 
-            /* FIX PAGINA BIANCA: Il contenitore del testo */
             .step-web-container { 
                 border-left: none !important; 
                 padding-left: 0 !important; 
-                /* CRITICO: flex: 1 impedisce al div di spingere oltre il 100% della larghezza */
-                flex: 1; 
-                width: auto !important; 
+                flex: 1; /* Fondamentale per non uscire dai margini */
             }
 
-            .step-action-title {
-                color: #000 !important;
-                font-size: 11pt;
-                text-transform: uppercase;
-                margin-bottom: 2px;
-            }
-
-            .step-desc {
-                color: #000 !important;
-                font-size: 11pt;
-                line-height: 1.4;
-            }
+            .step-action-title { color: #000 !important; font-size: 11pt; margin-bottom: 2px; text-transform:uppercase; }
+            .step-desc { color: #000 !important; font-size: 11pt; line-height: 1.4; text-align: justify; }
 
             .robo-tag {
-                border: 1px solid #333;
+                border: 1px solid #000;
                 color: #000 !important;
-                background: #fff !important;
+                background: white !important;
                 padding: 2px 8px;
                 border-radius: 4px;
+                font-size: 9pt;
                 margin-top: 5px;
                 display: inline-block;
             }
@@ -240,11 +238,11 @@
             #printFooter, .print-footer-multi { 
                 display: block !important; 
                 text-align: center; 
-                font-size: 9pt; 
-                color: #555; 
+                font-size: 8pt; 
+                color: #666; 
                 margin-top: 30px; 
-                border-top: 1px solid #ccc;
-                padding-top: 10px;
+                border-top: 1px solid #eee; 
+                padding-top: 10px; 
             }
         }
         #printFooter { display: none; }
@@ -252,8 +250,8 @@
 </head>
 <body>
 
-    <div class="container">
-        <h1 class="no-print">🍳 RoboCook <span style="font-size:0.4em; vertical-align:middle; background:#2c423b; padding:3px 8px; border-radius:10px; color:white;">v9.1 ChefGPT</span></h1>
+    <div class="container" id="mainAppContainer">
+        <h1 class="no-print">🍳 RoboCook <span style="font-size:0.4em; vertical-align:middle; background:#2c423b; padding:3px 8px; border-radius:10px; color:white;">v9.2 ChefGPT</span></h1>
 
         <div class="section no-print">
             <label>
@@ -300,7 +298,7 @@
                 <span id="resServings" class="recipe-meta">...</span>
             </div>
             <div id="stepsContainer"></div>
-            <div id="printFooter">Ricetta generata e ottimizzata per Robot da Cucina da AI Converter.</div>
+            <div id="printFooter">Generato con RoboCook</div>
         </div>
 
         <div class="action-group no-print" id="actionButtons" style="display:none;">
@@ -322,9 +320,7 @@
             <div id="savedList"></div>
         </div>
 
-    </div>
-
-    <div id="multiPrintArea"></div>
+    </div> <div id="multiPrintArea"></div>
 
     <div id="helpModal" class="modal" onclick="closeModalOnClick(event)">
         <div class="modal-content">
@@ -583,10 +579,18 @@
 
             const recipes = getSavedRecipes();
             const printArea = document.getElementById('multiPrintArea');
+            const mainContainer = document.getElementById('mainAppContainer'); // Riferimento al container principale
+            
             printArea.innerHTML = "";
 
-            // Aggiungi classe al body per dire al CSS "Sto stampando multiplo, nascondi la card singola"
+            // Aggiungi classe al body per switch CSS
             document.body.classList.add('printing-multi');
+
+            // --- BUGFIX: NASCONDI MANUALMENTE L'APP ---
+            // A volte il CSS non basta se il render del browser è lento. 
+            // Nascondiamo fisicamente l'interfaccia per essere sicuri che l'altezza sia calcolata sulle ricette.
+            mainContainer.style.display = 'none';
+            printArea.style.display = 'block';
 
             checkboxes.forEach(cb => {
                 const id = parseInt(cb.value);
@@ -605,8 +609,9 @@
                         </div>`;
                     });
 
+                    // Nota: 'recipe-print-wrapper' ha page-break-after: always
                     const recipeHtml = `
-                    <div style="page-break-after: always; margin-bottom:40px;">
+                    <div class="recipe-print-wrapper">
                         <div class="recipe-header">
                             <h2 class="recipe-title">${rData.title}</h2>
                             <span class="recipe-meta">${rData.servings}</span>
@@ -621,15 +626,21 @@
                 }
             });
 
-            // Piccolo ritardo per assicurare il render del DOM prima della stampa
+            // Timer per dare tempo al DOM di renderizzare le immagini/font prima della finestra di stampa
             setTimeout(() => {
                 window.print();
-                // Pulizia post-stampa ritardata
+                
+                // --- RIPRISTINO ---
+                // Eseguiamo dopo che l'utente chiude la finestra di stampa
+                // Nota: In alcuni browser window.print() blocca lo script, in altri no.
+                // Il timeout assicura che il ripristino avvenga DOPO l'apertura del dialog.
                 setTimeout(() => {
                     document.body.classList.remove('printing-multi');
+                    mainContainer.style.display = 'block'; // Ripristina UI
+                    printArea.style.display = 'none';
                     printArea.innerHTML = ""; 
-                }, 1000);
-            }, 100);
+                }, 500);
+            }, 200);
         }
     </script>
 </body>
