@@ -121,9 +121,10 @@
             .container { box-shadow: none; padding: 0; border: none; width: 100%; max-width: 100%; }
             .no-print, .section, .tab-group, .input-panel, h1, button, .status-box, .modal, .action-group, #savedRecipesContainer { display: none !important; }
             
-            /* GESTIONE VISIBILITÀ: Se stiamo stampando Multiplo, nascondi la Card singola */
-            body.printing-multi #recipeCard { display: none !important; }
+            /* GESTIONE VISIBILITÀ: Se stiamo stampando Multiplo, nascondi TUTTO IL CONTAINER */
+            body.printing-multi .container { display: none !important; } 
             body.printing-multi #multiPrintArea { display: block !important; }
+
 
             /* Layout Base Ricetta (comune a singola e multipla) */
             .recipe-print-wrapper {
